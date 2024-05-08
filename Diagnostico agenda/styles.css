@@ -1,0 +1,142 @@
+/* Estilos para el contenedor del título */
+.title-container {
+    text-align: center;
+    padding: 20px;
+    
+    border-radius: 10px;
+    width: 100%; /* Ajusta el ancho del contenedor */
+    margin: 20px auto;
+    background-image: url('agenda\ titulo.png');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-contacts-container{
+    text-align: center;
+    padding: 1px;
+    
+    border-radius: 10px;
+    width: 50%; /* Ajusta el ancho del contenedor */
+    margin: 40px auto;
+    background-color: #FF7FB5;
+    color:white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 25px; /* Ajusta la altura del contenedor */
+  }
+  
+  .title-container h1 {
+    font-family: 'Monaco', monospace;
+    font-size: 400%;
+  }
+  
+  input, textarea, select, button {
+  width: 400px; /* Ancho ajustado a 200px */
+  padding: 10;
+  margin: 10;
+  box-sizing: border-box;
+}
+
+.container {
+    max-width: 800px; /* Ancho máximo del contenido */
+    margin: 0 auto; /* Centrar el contenido horizontalmente */
+    padding: 0 20px; /* Márgenes a ambos lados del contenido */
+}
+
+.add-contact-button {
+    background-color:#FF7FB5; /* Green color */
+    color: white;
+    border: none; /* Remove default border */
+    padding: 10px 30px; /* Add padding */
+    text-align: center;
+    width: 20%;
+    text-decoration: none; /* Remove underline */
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 10px; /* Rounded corners */
+    cursor: pointer; /* Indicate clickable behavior */
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add-contact-button{
+    font-family: 'Monaco', monospace;
+  }
+
+  /* Estilos para los campos de entrada cuando están enfocados */
+.form-contact-container input[type="text"]:focus {
+    border-color: #FF7FB5; /* Cambia el color del borde a rosa */
+    outline: none; /* Elimina el contorno predeterminado */
+}
+  
+  .title-contacts-container h2 {
+    font-family: 'Monaco', monospace;
+  }
+
+  .buttons-container{
+  display: flex; /* Activate Flexbox */
+  justify-content: center; /* Center elements horizontally */
+  align-items: center;
+  }
+
+  
+
+ /* Estilos para el contenedor del formulario */
+.form-contact-container {
+    justify-content: center;
+    align-items: center;
+    background-color: white; /* Fondo gris claro */
+    border-radius: 10px; /* Bordes redondeados */
+    padding: 20px; /* Espaciado interior */
+    margin-bottom: 20px; /* Espaciado inferior */
+}
+
+/* Estilos para los campos de entrada */
+.form-contact-container input[type="text"] {
+    width: 100%; /* Ancho completo */
+    margin-bottom: 10px; /* Espaciado inferior entre campos */
+    padding: 10px; /* Espaciado interior */
+    border: 1px solid #B2B3F4; /* Borde del campo */
+    border-radius: 10px; /* Bordes redondeados */
+}
+ 
+
+ /* Estilos para la tabla */
+#tabla-contactos {
+    width: 100%; /* Ajusta el ancho de la tabla al 100% del contenedor */
+    margin: 0 auto;
+    border-collapse: collapse; /* Combina los bordes de las celdas */
+}
+
+/* Estilos para las filas de encabezado */
+#tabla-contactos thead th {
+    
+    background-color: #FF7FB5;  /* Fondo gris para las celdas de encabezado */
+    padding: 7px; /* Añade espacio alrededor del texto en las celdas de encabezado */
+    margin: 8px;
+    border: 8px solid white; /* Agrega un borde a todas las celdas de encabezado */
+    color: white;
+    font-family: 'Monaco', monospace;
+    
+}
+
+/* Estilos para las filas de cuerpo */
+#tabla-contactos tbody tr {
+    margin: 0 auto;
+    background-color: white; /* Fondo gris claro para las filas de cuerpo */
+}
+
+/* Estilos para las celdas */
+#tabla-contactos td, #tabla-contactos th {
+    padding: 20px; /* Añade espacio alrededor del texto en las celdas */
+    margin: 20px;
+}
+  
+  body {
+    margin: 20px;
+  }

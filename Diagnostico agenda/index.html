@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My agenda</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+    <!-- Contenedor principal para centrar la página -->
+        <!-- Contenedor para el título -->
+        <div class="title-container">
+            <h1>AGENDA</h1>
+        </div>
+
+        <div class="form-contact-container">
+            
+            <input type="text" id="first_name" placeholder="Firstname">
+            <input type="text" id="surnames" placeholder="Surnames">
+            <input type="text" id="address" placeholder="Address">
+            <input type="text" id="phone" placeholder="Phones">
+            
+        </div>
+        <div class="buttons-container">
+            <button class="add-contact-button" onclick="addContact()">ADD CONTACT</button>
+        </div>
+        
+        <!-- Botón para cargar todos los contactos -->
+        
+        <div class="title-contacts-container">
+            <h2>CONTACTS</h2>
+        </div>
+
+        <div class="buttons-container">
+            <button class="add-contact-button" onclick="getContacts()">GET CONTACTS</button>
+        </div>
+       
+
+        <!-- Tabla para mostrar los contactos -->
+        <table id="tabla-contactos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>FIRSTNAME</th>
+                    <th>SURNAMES</th>
+                    <th>ADDRESS</th>
+                    <th>PHONES</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-contactos-body">
+                <!-- Aquí se insertarán las filas de los contactos -->
+            </tbody>
+        </table>
+    </div>
+    <!-- Script JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
