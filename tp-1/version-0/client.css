@@ -1,0 +1,117 @@
+body {
+
+    margin: 0;
+    padding: 0;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+.title {
+    font-family: 'Danfo', sans-serif;
+    color: #0000FF ;
+    margin: 0 auto;
+    font-size: 60px; 
+}
+
+.carrito {
+    font-family: 'Anton';
+    text-align: right;
+    font-size: 20; 
+}
+
+.products-container {
+    font-family: 'Anton';
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.product {
+    width: calc(33.33% - 40px); 
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.product img {
+    max-width: 100%;
+    height: auto;
+}
+
+.product h2 {
+    font-size: 20px;
+    margin-top: 0;
+}
+
+.product p {
+    margin-bottom: 5px;
+}
+
+.product button {
+    font-family: 'Anton';
+    background-color:#0000FF ;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.product button:hover {
+    background-color: #FF33CC ;
+}
+
+.carrito {
+    position: relative; 
+}
+
+.carrito button {
+    font-family: 'Anton';
+    margin-top: 10px;
+    background-color:#FF33CC ;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.carrito-detalle {
+    display: none; 
+    position: absolute;
+    top: calc(100% + 10px); 
+    left: -50px;
+    background-color: white;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+.carrito:hover .carrito-detalle {
+    display: block; 
+}
+
+.carrito-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px; 
+}
+
+.carrito-icon img {
+    width: 30px; 
+    height: 30px; 
+}
+
+.carrito button:hover {
+    background-color: #0000FF;
+}
