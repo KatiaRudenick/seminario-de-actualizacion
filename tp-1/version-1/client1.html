@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Page</title>
+    <link rel="icon" href="/version-0/Img/arcoiris.png" type="image/png">
+    <link rel="stylesheet" href="client1.css"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Danfo&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Danfo&display=swap" rel="stylesheet">
+</head>
+<body>
+
+   
+    <div class="header-container">
+        <h1 class="title">Tienda Online</h1>
+        <div class="carrito"> <!-- Carrito -->
+            <h2 class="carrito-title">
+                <span class="carrito-icon">
+                    <img src="/version-0/Img/carrito.png" alt="Icono Carrito">
+                </span>
+                Carrito
+            </h2>
+            <div class="carrito-detalle"> <!-- Detalle de la compra (inicialmente oculto) -->
+                <ul id="carrito-list"></ul>
+                <p>Total: $<span id="total"></span></p>
+                <button onclick="pagar()">Pagar</button>
+            </div>
+        </div>
+    </div>
+
+<div class="products-container">
+    
+    <div class="product"> <!-- Producto 1 -->
+        <img src="/version-0/Img/broche.jpg" alt="Broche" width="400" height="400">
+        <h2>Broche</h2>
+        <p>$2000.00</p>
+        <button onclick="addToCart('Broche', 8000)">Agregar al Carrito</button>
+    </div>
+    <div class="product"> <!-- Producto 2 -->
+        <img src="/version-0/Img/pulsera.jpg" alt="Pulsera" width="400" height="400">
+        <h2>Pulsera</h2>
+        <p>$6000.00</p>
+        <button onclick="addToCart('Pulsera', 6000)">Agregar al Carrito</button>
+    </div>
+    <div class="product"> <!-- Producto 3 -->
+        <img src="/version-0/Img/aros.jpg" alt="Aros" width="400" height="400">
+        <h2>Aros con strass</h2>
+        <p>$2000.00</p>
+        <button onclick="addToCart('Aros con strass', 6000)">Agregar al Carrito</button>
+    </div>
+    <div class="product"> <!-- Producto 4 -->
+        <img src="/version-0/Img/gota.jpg" alt="Gota" width="400" height="400">
+        <h2>Aros gota</h2>
+        <p>$7500.00</p>
+        <button onclick="addToCart('Aros gota', 10000)">Agregar al Carrito</button>
+    </div>
+    <div class="product"> <!-- Producto 5 -->
+        <img src="/version-0/Img/vincha.jpg" alt="Vincha" width="400" height="400">
+        <h2>Vincha</h2>
+        <p>$3000.00</p>
+        <button onclick="addToCart('Vincha', 8000)">Agregar al Carrito</button>
+    </div>
+    <div class="product"> <!-- Producto 6 -->
+        <img src="/version-0/Img/collar.jpg" alt="Collar" width="400" height="400">
+        <h2>Collar de corazones</h2>
+        <p>$8000.00</p>
+        <button onclick="addToCart('Collar de corazones', 8000)">Agregar al Carrito</button>
+    </div>
+    
+</div>
+
+
+
+<script>
+    
+    var carrito = [];
+    var total = 0;
+
+    function addToCart(productName, price) {
+        // Agrega el producto al carrito como un objeto con el nombre y el precio
+        carrito.push({ name: productName, price: price });
+        // Actualiza el monto total
+        total += price;
+        // Actualiza la lista de productos en el carrito
+        updateCart();
+        alert('¡' + productName + ' agregado al carrito!');
+    }
+
+    function updateCart() {
+        var carritoList = document.getElementById('carrito-list');
+        carritoList.innerHTML = '';
+        carrito.forEach(function(product, index) {
+            var listItem = document.createElement('li');
+            listItem.textContent = product.name + " - $" + product.price.toFixed(2); // Agregar el precio al nombre del producto
+            var deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.onclick = function() {
+                total -= product.price;
+                carrito.splice(index, 1);
+                updateCart();
+            };
+            listItem.appendChild(deleteButton);
+            carritoList.appendChild(listItem);
+        });
+        document.getElementById('total').textContent = total.toFixed(2);
+    }
+
+    function pagar() {
+        alert('¡Gracias por tu compra! Total: $' + total.toFixed(2));
+        // Reinicia el carrito y el total
+        carrito = [];
+        total = 0;
+        updateCart(); // Actualiza la vista del carrito
+    }
+</script>
+
+</body>
+</html>

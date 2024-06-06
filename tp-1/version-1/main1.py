@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import timedelta
 import mysql.connector
+from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -9,20 +10,14 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 
 # Creo la app Flask
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins='http://127.0.0.1:5500')
+  
 
 # Configuraciones de la app Flask
 app.config['JWT_SECRET_KEY'] = 'mishka' # Establezco la clave secreta que uso para firmar los tokens JWT
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/controlusuarios' # Configuro la URI de la base de datos para SQLAlchemy. En este caso uso MySQL con el usuario 'root' y la base de datos 'controlusuarios'.
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/controlusuarios'
 app.config['JWT_EXPIRATION_DELTA'] = timedelta(days=1) # Configuro el tiempo de expiracion de los tokens JWT.Se vencen despues de 1 dia.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-
-# Inicializo extensiones
-db = SQLAlchemy(app) #permite interactuar con la base de datos.
-bcrypt = Bcrypt(app) # se usa para hashear y verificar contraseñas de manera segura
-jwt = JWTManager(app)# se usa para manejar la autenticación basada en tokens JWT.
-
 
 # Verifica la existencia de la base de datos
 def check_database(cursor):
@@ -32,6 +27,30 @@ def check_database(cursor):
         if database[0] == "controlusuarios":
             return True
     return False
+
+# Inicializo extensiones
+db = SQLAlchemy(app) #permite interactuar con la base de datos.
+bcrypt = Bcrypt(app) # se usa para hashear y verificar contraseñas de manera segura
+jwt = JWTManager(app)# se usa para manejar la autenticación basada en tokens JWT.
+
+
+# Conexion a la base de datos MySQL
+db_connection = mysql.connector.connect(
+    host="localhost",
+    user="root",
+)
+
+cursor = db_connection.cursor()
+
+# Verifica y crea la base de datos si no existe
+if not check_database(cursor):
+    cursor.execute("CREATE DATABASE controlusuarios")
+    db_connection.commit()
+
+# Conexion a la base de datos controlusuarios
+db_connection = mysql.connector.connect(host="localhost", user="root", database="controlusuarios")
+cursor = db_connection.cursor()
+
 
 # Crea las tablas en la base de datos si no existe
 def create_tables(cursor):
@@ -73,62 +92,8 @@ def create_tables(cursor):
         )
     """)
 
-# Crea categorias y acciones por defecto
-def create_default_categories_and_actions():
-    default_categories = ['admin', 'client']
-    default_actions = {
-        'client': ['agregarProducto', 'eliminarProducto', 'pagarCompra', 'pagarConTarjeta'],
-        'admin': [
-            'editarUsuario', 'eliminarUsuario', 'crearGrupo', 
-            'editarGrupo', 'eliminarGrupo', 'crearAccion', 
-            'editarAccion', 'eliminarAccion'
-        ]
-    }
-
-    
-    for category_name in default_categories:
-        if not Category.query.filter_by(name=category_name).first():
-            new_category = Category(name=category_name)
-            db.session.add(new_category)
-    db.session.commit()
-
-    # Asocia las acciones con las categorias correspondientes
-    for category_name, actions in default_actions.items():
-        category = Category.query.filter_by(name=category_name).first()
-        if category:
-            for action_name in actions:
-                action = Action.query.filter_by(name=action_name).first()
-                if not action:
-                    action = Action(name=action_name)
-                    db.session.add(action)
-                    db.session.commit()
-                # Asocia la accion con la categoria correspondiente
-                if not CategoryAction.query.filter_by(category_id=category.id, action_id=action.id).first():
-                    category_action = CategoryAction(category_id=category.id, action_id=action.id)
-                    db.session.add(category_action)
-                    db.session.commit()
-
-# Conexion a la base de datos MySQL
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-)
-
-cursor = db_connection.cursor()
-
-# Verifica y crea la base de datos si no existe
-if not check_database(cursor):
-    cursor.execute("CREATE DATABASE controlusuarios")
-    db_connection.commit()
-
-# Conexion a la base de datos controlusuarios
-db_connection = mysql.connector.connect(host="localhost", user="root", database="controlusuarios")
-cursor = db_connection.cursor()
-
-
 # Crea las tablas en la base de datos controlusuarios si no existen
 create_tables(cursor)
-
 
 # Definicion de modelos de base de datos con SQLAlchemy
 class User(db.Model):
@@ -157,57 +122,70 @@ class CategoryAction(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('Category.id'), primary_key=True)
     action_id = db.Column(db.Integer, db.ForeignKey('Action.id'), primary_key=True)
 
+# Lista de categorías y acciones por defecto
+default_categories = ['admin', 'client']
+default_actions = {
+    'client': ['agregarProducto', 'eliminarProducto', 'pagarCompra', 'pagarConTarjeta'],
+    'admin': [
+        'editarUsuario', 'eliminarUsuario', 'crearGrupo', 
+        'editarGrupo', 'eliminarGrupo', 'crearAccion', 
+        'editarAccion', 'eliminarAccion'
+    ]
+}
+
+
+def create_default_categories_and_actions(default_categories, default_actions):
+    with app.app_context():
+        for category_name in default_categories:
+            existing_category = Category.query.filter_by(name=category_name).first()
+            if not existing_category:
+                cursor.callproc('Create_Default_Category', [category_name])
+
+        for category_name, actions in default_actions.items():
+            existing_category = Category.query.filter_by(name=category_name).first()
+            if existing_category:
+                for action_name in actions:
+                    existing_action = Action.query.filter_by(name=action_name).first()
+                    if not existing_action:
+                        cursor.callproc('Create_Default_Action', [action_name])
+
+        db_connection.commit()
+        print("Default categories and actions created successfully using stored procedures")
 
 # Rutas y funciones para el manejo de usuarios, categorias, acciones, etc. :
+# Ruta para el registro de usuarios
 
 # Ruta para registrar un nuevo usuario
 @app.route('/register', methods=['POST'])
 def register():
     try:
         data = request.json
+        print("Datos recibidos en la solicitud:", data)  # Agregar este print para verificar los datos recibidos
+
         username = data['username']
         password = data['password']
         categories = data['category'].split(',')
 
-         # Genera el hash de la contraseña
+        print("Username:", username)
+        print("Password:", password)
+        print("Categorías:", categories)
+
+        # Genera el hash de la contraseña
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        # Verifico si el usuario ya existe en la base de datos
-        user = User.query.filter_by(username=username).first()
-
-        if not user:
-            # Si el usuario no existe, crea
-            user = User(username=username, password=hashed_password)
-            db.session.add(user)
-            db.session.commit()
-        else:
-            # Si el usuario ya existe, se verifica la contraseña
-            if not bcrypt.check_password_hash(user.password, password):
-                return jsonify({"error": "Contraseña incorrecta para el usuario existente"}), 400
-
-         # Itera sobre las categorias proporcionadas
-        for category_name in categories:
-            category_name = category_name.strip()
-            category = Category.query.filter_by(name=category_name).first()
-            if not category:
-                return jsonify({"error": f"El grupo '{category_name}' no existe"}), 400
-
-            # Verifico si la relacion usuario-categoria ya existe
-            user_category = UserCategory.query.filter_by(user_id=user.id, category_id=category.id).first()
-            if not user_category:
-                # Si no existe, se crea
-                user_category = UserCategory(user_id=user.id, category_id=category.id)
-                db.session.add(user_category)
-
-         # Confirmo los cambios en la base de datos
-        db.session.commit()
+        # Llama al procedimiento almacenado usando SQLAlchemy
+        with app.app_context():
+            conn = db.engine.raw_connection()
+            cursor = conn.cursor()
+            cursor.callproc('RegisterUser', (username, hashed_password, data['category']))
+            cursor.close()
+            conn.commit()
 
         return jsonify({"message": "Usuario registrado o añadido a los grupos exitosamente"}), 201
 
-    except KeyError:
-        return jsonify({"error": "Faltan datos en la solicitud"}), 400
-
-# Ruta para ingresar a la pagina web
+    except KeyError: 
+        return jsonify({"error": "Faltan datos en la solicitud"}), 400         
+        # Ruta para ingresar a la pagina web
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json  # Obtiene los datos JSON de la solicitud
@@ -233,6 +211,9 @@ def login():
     access_token = create_access_token(identity={'user_id': user.id, 'category_id': category.id})
     return jsonify(access_token=access_token, category=category.name), 200  # Devuelve el token de acceso y el nombre de la categoria
 
+
+
+    
 # Ruta para obtener las acciones
 @app.route('/actions', methods=['GET'])
 def get_actions():
@@ -249,29 +230,57 @@ def get_actions():
 
     return jsonify([action.name for action in actions])
 
-# Ruta para eliminar una categoria nueva
+
 @app.route('/categories', methods=['POST'])
 def create_category():
-    data = request.json
-    name = data['name']
-    if Category.query.filter_by(name=name).first():
-        return jsonify({"error": "El grupo ya existe"}), 400
-    new_category = Category(name=name)
-    db.session.add(new_category)
-    db.session.commit()
-    return jsonify({"message": "Grupo creado exitosamente"}), 201
+    try:
+        # Obtener el nombre de la categoría del JSON de la solicitud
+        category_name = request.json.get('name')
 
-# Ruta para crear una accion nueva
+        # Crear una conexión directa al motor de SQLAlchemy
+        engine = db.engine.raw_connection()
+        cursor = engine.cursor()
+
+        # Llamar al procedimiento almacenado para crear la categoría
+        cursor.callproc("create_category", [category_name])
+        engine.commit()
+
+        # Cerrar el cursor y la conexión
+        cursor.close()
+        engine.close()
+
+        return jsonify({"message": "Categoría creada exitosamente"}), 201
+    except Exception as e:
+        # Si ocurre un error, revertir la transacción y devolver un mensaje de error
+        engine.rollback()
+        engine.close()
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/actions', methods=['POST'])
 def create_action():
-    data = request.json
-    name = data['name']
-    if Action.query.filter_by(name=name).first():
-        return jsonify({"error": "La accion ya existe"}), 400
-    new_action = Action(name=name)
-    db.session.add(new_action)
-    db.session.commit()
-    return jsonify({"message": "Accion creada exitosamente"}), 201
+    try:
+        # Obtener el nombre de la categoría del JSON de la solicitud
+        action_name = request.json.get('name')
+
+        # Crear una conexión directa al motor de SQLAlchemy
+        engine = db.engine.raw_connection()
+        cursor = engine.cursor()
+
+        # Llamar al procedimiento almacenado para crear la categoría
+        cursor.callproc("create_action", [action_name])
+        engine.commit()
+
+        # Cerrar el cursor y la conexión
+        cursor.close()
+        engine.close()
+
+        return jsonify({"message": "Accion creada exitosamente"}), 201
+    except Exception as e:
+        # Si ocurre un error, revertir la transacción y devolver un mensaje de error
+        engine.rollback()
+        engine.close()
+        return jsonify({"error": str(e)}), 500
+
 
 # Ruta para obtener los grupos
 @app.route('/categories', methods=['GET'])
@@ -348,53 +357,63 @@ def edit_user(user_id):
         new_username = data.get('username')
         new_category = data.get('category')
 
-        user = User.query.filter_by(id=user_id).first()
+        # Actualizar el nombre de usuario
+        user = User.query.get(user_id)
         if not user:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
         user.username = new_username
 
-        # Verifico si se especifico un grupo nuevo para el usuario
+        # Verificar si se especificó una nueva categoría para el usuario
         if new_category:
             category = Category.query.filter_by(name=new_category).first()
-            if not category:
+            if category:
+                # Verificar si ya existe una relación usuario-categoría para el usuario y la nueva categoría
+                if not UserCategory.query.filter_by(user_id=user_id, category_id=category.id).first():
+                    # Si la relación no existe, crearla
+                    user_category = UserCategory(user_id=user_id, category_id=category.id)
+                    db.session.add(user_category)
+            else:
                 return jsonify({"error": f"El grupo '{new_category}' no existe"}), 400
 
-            user_category = UserCategory.query.filter_by(user_id=user_id, category_id=category.id).first()
-            if not user_category:
-                # Si la relacion usuario-categoria no existe, se crea
-                user_category = UserCategory(user_id=user_id, category_id=category.id)
-                db.session.add(user_category)
-
         db.session.commit()
+
+        # Llamada al procedimiento almacenado usando SQLAlchemy
+        with app.app_context():
+            conn = db.engine.raw_connection()
+            cursor = conn.cursor()
+            cursor.callproc('edit_user', (user_id, new_username, new_category))
+            cursor.close()
+            conn.commit()
+
         return jsonify({"message": "Usuario actualizado exitosamente"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Ruta para eliminar un usuario
 @app.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):
     try:
-        # Busco el usuario
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({"error": "Usuario no encontrado"}), 404
+        # Crear una conexión directa al motor de SQLAlchemy
+        engine = db.engine.raw_connection()
+        cursor = engine.cursor()
 
-        # Elimino todas las relaciones de UserCategory para este usuario
-        UserCategory.query.filter_by(user_id=user_id).delete()
+        # Llamar al procedimiento almacenado
+        cursor.callproc('delete_user', [user_id])
 
-        # Luego elimino el usuario
-        db.session.delete(user)
-        db.session.commit()
+        # Cerrar el cursor y realizar commit
+        cursor.close()
+        engine.commit()
 
         return jsonify({"message": "Usuario eliminado exitosamente"}), 200
     except Exception as e:
-        # Si hay un error, se revierte la operacion
-        db.session.rollback()
+        # Si hay un error, se revierte la operación y se cierra la conexión
+        engine.rollback()
         return jsonify({"error": str(e)}), 500
+    finally:
+        # Asegurarse de cerrar la conexión
+        engine.close()
 
-# Ruta para editar un grupo
 @app.route('/categories/<int:category_id>', methods=['PUT'])
 @jwt_required()
 def edit_category(category_id):
@@ -402,40 +421,32 @@ def edit_category(category_id):
         data = request.json
         new_categoryname = data.get('name')
 
-        category = Category.query.filter_by(id=category_id).first()
-        if not category:
-            return jsonify({"error": "Categoria no encontrada"}), 404
+        # Llamar al procedimiento almacenado para editar la categoría
+        with app.app_context():
+            conn = db.engine.raw_connection()
+            cursor = conn.cursor()
+            cursor.callproc('edit_category', [category_id, new_categoryname])
+            cursor.close()
+            conn.commit()
 
-        category.name = new_categoryname
-
-        db.session.commit()
-
-        return jsonify({"message": "Categoria actualizada exitosamente"}), 200
+        return jsonify({"message": "Categoría actualizada exitosamente"}), 200
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Ruta para eliminar un grupo
 @app.route('/categories/<int:category_id>', methods=['DELETE'])
 @jwt_required()
 def delete_category(category_id):
     try:
-        # Busco el usuario
-        category = Category.query.get(category_id)
-        if not category:
-            return jsonify({"error": "Categoria no encontrada"}), 404
+        # Llamar al procedimiento almacenado para eliminar la categoría
+        with app.app_context():
+            conn = db.engine.raw_connection()
+            cursor = conn.cursor()
+            cursor.callproc('delete_category', [category_id])
+            cursor.close()
+            conn.commit()
 
-        # Elimino todas las relaciones de CategoryAction para esta categoria
-        CategoryAction.query.filter_by(category_id=category_id).delete()
-
-        # desp elimino la categoria
-        db.session.delete(category)
-        db.session.commit()
-
-        return jsonify({"message": "Categoria eliminada exitosamente"}), 200
+        return jsonify({"message": "Categoría eliminada exitosamente"}), 200
     except Exception as e:
-        # Si hay un error, se revierte la operacion
-        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/actions/<int:action_id>', methods=['PUT'])
@@ -445,38 +456,32 @@ def edit_action(action_id):
         data = request.json
         new_actionname = data.get('name')
 
-        action = Action.query.filter_by(id=action_id).first()
-        if not action:
-            return jsonify({"error": "Accion no encontrada"}), 404
-
-        action.name = new_actionname
-
-        db.session.commit()
+        # Llamar al procedimiento almacenado para editar la accion
+        with app.app_context():
+            conn = db.engine.raw_connection()
+            cursor = conn.cursor()
+            cursor.callproc('edit_action', [action_id, new_actionname])
+            cursor.close()
+            conn.commit()
 
         return jsonify({"message": "Accion actualizada exitosamente"}), 200
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Ruta para eliminar una accion
 @app.route('/actions/<int:action_id>', methods=['DELETE'])
-@jwt_required() 
+@jwt_required()
 def delete_action(action_id):
     try:
-        # Busco el usuario
-        action = Action.query.get(action_id)
-        if not action:
-            return jsonify({"error": "Accion no encontrada"}), 404
-
-        CategoryAction.query.filter_by(action_id=action_id).delete()
-
-        db.session.delete(action)
-        db.session.commit()
+        # Llamar al procedimiento almacenado para eliminar la accion
+        with app.app_context():
+            conn = db.engine.raw_connection()
+            cursor = conn.cursor()
+            cursor.callproc('delete_action', [action_id])
+            cursor.close()
+            conn.commit()
 
         return jsonify({"message": "Accion eliminada exitosamente"}), 200
     except Exception as e:
-    
-        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 
@@ -486,5 +491,6 @@ if __name__ == '__main__':
         # Crea el contexto de la aplicacion para operaciones con la base de datos
         db.create_all()
         # Crea todas las tablas definidas en los modelos si no existen
-        create_default_categories_and_actions()
+        create_default_categories_and_actions(default_categories, default_actions)
+    
     app.run(debug=True) # Inicia la app Flask 

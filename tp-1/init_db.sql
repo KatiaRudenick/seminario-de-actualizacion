@@ -27,3 +27,8 @@ CREATE TABLE CategoryAction (
   FOREIGN KEY (Category_id) REFERENCES Category(id),
   FOREIGN KEY (Action_id) REFERENCES Action(id)
 );
+
+CREATE TABLE IF NOT EXISTS debug_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message VARCHAR(255)
+);
