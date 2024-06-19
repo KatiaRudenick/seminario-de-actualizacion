@@ -1,0 +1,151 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    text-align: center;
+}
+
+.header-container {
+    display: flex;
+    flex-direction: row; /* Display elements inline */
+    justify-content: space-between; /* OR */
+  }
+  
+  .icono {
+    display: flex;
+    justify-content: flex-start;
+    align-items: left;
+    width: 200px;
+    height: 200px;
+    margin-right: 20px; /* OR margin-right: auto; */
+    margin-bottom: 10px;
+  }
+
+h1 {
+    font-family: 'Danfo', sans-serif;
+    text-align: center;
+    color: #0000FF;
+    margin: 20px 0;
+    font-size: 60px;
+}
+
+h2 {
+    font-family: 'Anton';
+    text-align: left;
+    margin: 20px 0;
+}
+
+table {
+    max-width: 600px; 
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto; 
+    margin-bottom: 20px;
+}
+
+th, td {
+    font-family: 'Anton';
+    padding: 20px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #ddd;
+}
+
+form {
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#assignActionToCategoryForm {
+    font-family: 'Anton' 
+}
+
+#addActionForm {
+    font-family: 'Anton' 
+}
+
+#addActionForm label,
+#addActionForm input[type="text"],
+#addActionForm button,
+#addActionForm select {
+    font-family: 'Anton' 
+}
+
+#addCategoryForm {
+    font-family: 'Anton' 
+}
+
+#addCategoryForm label,
+#addCategoryForm input[type="text"],
+#addCategoryForm button,
+#addCategoryForm select {
+    font-family: 'Anton' 
+}
+
+input[type="text"],
+button,
+select {
+    font-family: 'Anton';
+    padding: 10px;
+    margin: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    font-family: 'Anton';
+    background-color: #0000FF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #FF33CC;
+}
+
+@media (max-width: 768px) {
+    form {
+        width: 80%;
+    }
+}
+
+
+/* Estilos adicionales para el botón de cierre de sesión */
+.logout-button {
+    font-family: 'Anton';
+    background-color:#0000FF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #FF33CC;
+}

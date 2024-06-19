@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin App</title>
+    <link rel="icon" href="/version-0/Img/CRS.png" type="image/png">
+    <link rel="stylesheet" href="admin1.css"> <!-- Enlaza tu archivo CSS aqui -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Danfo&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Danfo&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Admin App</h1>
+    <div class="header-container">
+        <div class="icono"><img src="/version-0/Img/CRS.png" alt="Icono" class="icono"></div>
+    </div>
+    <div class="header-container1">
+        <button class="logout-button" onclick="logout()">Cerrar Sesión</button>
+    </div>
+    <!-- Lista de usuarios y acciones -->
+    <h2>Usuarios y Acciones</h2>
+    <table id="usersTable" border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Grupo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <!-- Lista de grupos  -->
+    <h2>Grupos</h2>
+    <table id="categoriesTable" border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Grupo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <!-- Lista de acciones -->
+    <h2>Acciones</h2>
+    <table id="actionsTable" border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Accion</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <!-- Registro de grupo -->
+    <h2>Nuevo grupo</h2>
+    <form id="addCategoryForm">
+        <label for="categoryName">Nombre:</label>
+        <input type="text" id="categoryName" name="name" required><br>
+
+        <button type="submit">Agregar Grupo</button>
+    </form>
+
+    <!-- Registro de accion -->
+<h2>Nueva Accion</h2>
+<form id="addActionForm">
+    <label for="actionName">Nombre:</label>
+    <input type="text" id="actionName" name="name" required>
+    <button type="submit">Agregar Accion</button>
+</form>
+
+<!-- Asignacion de Accion a Grupo -->
+<h2>Asignar Accion a Grupo</h2>
+<form id="assignActionToCategoryForm">
+    <label for="categorySelect">Seleccione un Grupo:</label>
+    <select id="categorySelect" name="categoryId">
+       
+    </select>
+
+    <label for="actionSelect">Seleccione una Accion:</label>
+    <select id="actionSelect" name="actionId">
+        
+    </select>
+
+    <button type="submit">Asignar Accion a Grupo</button>
+</form>
+
+    <!-- Script JavaScript -->
+    <script>
+        // Funcion para cargar usuarios y sus acciones relacionadas desde la API
+async function loadUsersAndActions() {
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    if (token) { // Verifica si el token existe
+        const response = await fetch('http://127.0.0.1:5000/users', {
+            headers: {
+                'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+            }
+        });
+        const data = await response.json(); // Convierte la respuesta a JSON
+        const usersTableBody = document.getElementById('usersTable').querySelector('tbody'); // Obtiene el cuerpo de la tabla de usuarios
+        usersTableBody.innerHTML = data.map(user => `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.category}</td>
+                <td>
+                    <button onclick="editUser(${user.id})">Editar</button>
+                    <button onclick="deleteUser(${user.id})">Eliminar</button>
+                </td>
+            </tr>
+        `).join(''); // Llena la tabla con los datos de los usuarios
+    }
+}
+
+        // Funcion para cargar categorias y acciones relacionadas desde la API
+async function loadCategoriesAndActions() {
+    const response = await fetch('http://127.0.0.1:5000/categories'); // Realiza una solicitud GET para obtener las categorias
+    const data = await response.json(); // Convierte la respuesta a JSON
+    const categoriesTableBody = document.getElementById('categoriesTable').querySelector('tbody'); // Obtiene el cuerpo de la tabla de categorias
+    const categorySelect = document.getElementById('category'); // Obtiene el elemento select de categorias
+
+    categoriesTableBody.innerHTML = data.map(category => `
+        <tr>
+            <td>${category.id}</td>
+            <td>${category.name}</td>
+            <td>${category.actions.join(', ')}</td>
+        </tr>
+    `).join(''); // Llena la tabla con los datos de las categorias
+
+    categorySelect.innerHTML = data.map(category => `
+        <option value="${category.id}">${category.name}</option>
+    `).join(''); // Llena el elemento select con las opciones de categorias
+}
+
+        // Funcion para cargar categorias y acciones en elementos dropdown desde la API
+async function loadCategoriesAndActionsDropdowns() {
+    // Cargar categorias
+    const categoriesResponse = await fetch('http://127.0.0.1:5000/categories'); // Realiza una solicitud GET para obtener las categorias
+    const categoriesData = await categoriesResponse.json(); // Convierte la respuesta a JSON
+    const categorySelect = document.getElementById('categorySelect'); // Obtiene el elemento select de categorias
+    categorySelect.innerHTML = categoriesData.map(category => `
+        <option value="${category.id}">${category.name}</option>
+    `).join(''); // Llena el elemento select con las opciones de categorias
+
+    // Cargar acciones
+    const actionsResponse = await fetch('http://127.0.0.1:5000/actions'); // Realiza una solicitud GET para obtener las acciones
+    const actionsData = await actionsResponse.json(); // Convierte la respuesta a JSON
+    const actionSelect = document.getElementById('actionSelect'); // Obtiene el elemento select de acciones
+    actionSelect.innerHTML = actionsData.map(action => `
+        <option value="${action.id}">${action.name}</option>
+    `).join(''); // Llena el elemento select con las opciones de acciones
+}
+
+        // Funcion para cargar categorias desde la API
+async function loadCategories() {
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    if (token) { // Verifica si el token existe
+        const response = await fetch('http://127.0.0.1:5000/categories', {
+            headers: {
+                'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+            }
+        });
+        const data = await response.json(); // Convierte la respuesta a JSON
+        const categoriesTableBody = document.getElementById('categoriesTable').querySelector('tbody'); // Obtiene el cuerpo de la tabla de categorias
+        categoriesTableBody.innerHTML = data.map(category => `
+            <tr>
+                <td>${category.id}</td>
+                <td>${category.name}</td>
+                <td>${category.actions.join(', ')}</td>
+                <td>
+                    <button onclick="editCategory(${category.id})">Editar Grupo</button>
+                    <button onclick="deleteCategory(${category.id})">Eliminar Grupo</button>
+                </td>
+            </tr>
+        `).join(''); // Llena la tabla con los datos de las categorias
+    }
+}
+
+        // Funcion para cargar acciones desde la API
+async function loadActions() {
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    if (token) { // Verifica si el token existe
+        const response = await fetch('http://127.0.0.1:5000/actions', {
+            headers: {
+                'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+            }
+        });
+        const data = await response.json(); // Convierte la respuesta a JSON
+        const actionsTableBody = document.getElementById('actionsTable').querySelector('tbody'); // Obtiene el cuerpo de la tabla de acciones
+        actionsTableBody.innerHTML = data.map(action => `
+            <tr>
+                <td>${action.id}</td>
+                <td>${action.name}</td>
+                <td>
+                    <button onclick="editAction(${action.id})">Editar</button>
+                    <button onclick="deleteAction(${action.id})">Eliminar</button>
+                </td>
+            </tr>
+        `).join(''); // Llena la tabla con los datos de las acciones
+    }
+}
+
+        // Funcion para editar un usuario existente
+async function editUser(userId) {
+    const newUsername = prompt('Ingrese el nuevo nombre de usuario:'); // Solicita el nuevo nombre de usuario
+    const newCategory = prompt('Ingrese el nuevo grupo del usuario:'); // Solicita el nuevo grupo del usuario
+
+    if (newUsername && newCategory) { // Verifica si se ingresaron ambos datos
+        const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+        const data = { username: newUsername, category: newCategory }; // Crea el objeto de datos a enviar
+
+        const response = await fetch(`http://127.0.0.1:5000/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json', // Especifica que los datos se enviaran en formato JSON
+                'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+            },
+            body: JSON.stringify(data) // Convierte el objeto de datos a una cadena JSON
+        });
+
+        const responseData = await response.json(); // Convierte la respuesta a JSON
+        alert(responseData.message || responseData.error); // Muestra un mensaje con el resultado de la operacion
+        await loadUsersAndActions(); // Recarga la lista de usuarios
+    }
+}
+
+        // Funcion para eliminar un usuario existente
+async function deleteUser(userId) {
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    const response = await fetch(`http://127.0.0.1:5000/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+        }
+    });
+    const data = await response.json(); // Convierte la respuesta a JSON
+    alert(data.message || data.error); // Muestra un mensaje con el resultado de la operacion
+    loadUsersAndActions(); // Recarga la lista de usuarios
+}
+
+
+        // Funcion para editar una accion existente
+async function editAction(actionId) {
+    const newActionname = prompt('Ingrese el nuevo nombre de la accion:'); // Solicita el nuevo nombre de la accion
+
+    if (newActionname) { // Verifica si se ingreso un nuevo nombre
+        const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+        const data = { name: newActionname }; // Crea el objeto de datos a enviar
+
+        const response = await fetch(`http://127.0.0.1:5000/actions/${actionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json', // Especifica que los datos se enviaran en formato JSON
+                'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+            },
+            body: JSON.stringify(data) // Convierte el objeto de datos a una cadena JSON
+        });
+
+        const responseData = await response.json(); // Convierte la respuesta a JSON
+        alert(responseData.message || responseData.error); // Muestra un mensaje con el resultado de la operacion
+        await loadActions(); // Recarga la lista de acciones
+    }
+}
+        
+        // Funcion para eliminar una accion existente
+async function deleteAction(actionId) {
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    const response = await fetch(`http://127.0.0.1:5000/actions/${actionId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+        }
+    });
+    const data = await response.json(); // Convierte la respuesta a JSON
+    alert(data.message || data.error); // Muestra un mensaje con el resultado de la operacion
+    loadActions(); // Recarga la lista de acciones
+}
+
+        // Funcion para editar una categoria existente
+async function editCategory(categoryId) {
+    const newCategoryName = prompt('Ingrese el nuevo nombre de la categoria:'); // Solicita el nuevo nombre de la categoria
+
+    if (newCategoryName) { // Verifica si se ingreso un nuevo nombre
+        const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+        const data = { name: newCategoryName }; // Crea el objeto de datos a enviar
+
+        const response = await fetch(`http://127.0.0.1:5000/categories/${categoryId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json', // Especifica que los datos se enviaran en formato JSON
+                'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+            },
+            body: JSON.stringify(data) // Convierte el objeto de datos a una cadena JSON
+        });
+
+        const responseData = await response.json(); // Convierte la respuesta a JSON
+        alert(responseData.message || responseData.error); // Muestra un mensaje con el resultado de la operacion
+        await loadCategories(); // Recarga la lista de categorias
+    }
+}
+
+        // Funcion para eliminar una categoria existente
+async function deleteCategory(categoryId) {
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    const response = await fetch(`http://127.0.0.1:5000/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+        }
+    });
+    const data = await response.json(); // Convierte la respuesta a JSON
+    alert(data.message || data.error); // Muestra un mensaje con el resultado de la operacion
+    loadCategories(); // Recarga la lista de categorias
+}
+
+        
+        // Funcion para cargar datos al iniciar la pagina
+window.onload = async function() {
+    await loadCategoriesAndActionsDropdowns(); // Carga las categorias y acciones en los elementos dropdown
+    await loadUsersAndActions(); // Carga los usuarios y sus acciones relacionadas
+    await loadCategories(); // Carga las categorias
+    await loadActions(); // Carga las acciones
+};
+
+        // Maneja el formulario de añadir accion
+document.getElementById('addActionForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Previene el comportamiento por defecto del formulario
+
+    const actionName = document.getElementById('actionName').value; // Obtiene el nombre de la accion ingresada
+
+    const data = {
+        name: actionName // Crea el objeto de datos a enviar
+    };
+        
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    const response = await fetch('http://127.0.0.1:5000/actions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json', // Especifica que los datos se enviaran en formato JSON
+            'Authorization': `Bearer ${token}` // Añade el token de autorizacion en la cabecera
+        },
+        body: JSON.stringify(data), // Convierte el objeto de datos a una cadena JSON
+    });
+        
+    const responseData = await response.json(); // Convierte la respuesta a JSON
+    alert(responseData.message || responseData.error); // Muestra un mensaje con el resultado de la operacion
+    await loadActions(); // Recarga la lista de acciones
+});
+
+        // Maneja el formulario de añadir categoria
+document.getElementById('addCategoryForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Previene el comportamiento por defecto del formulario
+    const formData = new FormData(this); // Crea un objeto FormData con los datos del formulario
+    const response = await fetch('http://127.0.0.1:5000/categories', {
+        method: 'POST',
+        body: JSON.stringify(Object.fromEntries(formData.entries())), // Convierte el FormData a un objeto JSON
+        headers: {
+            'Content-Type': 'application/json' // Especifica que los datos se enviaran en formato JSON
+        }
+    });
+    const data = await response.json(); // Convierte la respuesta a JSON
+    alert(data.message || data.error); // Muestra un mensaje con el resultado de la operacion
+    await loadCategoriesAndActions(); // Recarga la lista de categorias y acciones
+});
+
+        // Maneja el formulario de asignar accion a categoria
+document.getElementById('assignActionToCategoryForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Previene el comportamiento por defecto del formulario
+
+    const categoryId = document.getElementById('categorySelect').value; // Obtiene el ID de la categoria seleccionada
+    const actionId = document.getElementById('actionSelect').value; // Obtiene el ID de la accion seleccionada
+
+    const data = {
+        categoryId: categoryId, // Crea el objeto de datos a enviar
+        actionId: actionId
+    };
+
+    const token = localStorage.getItem('access_token'); // Obtiene el token de acceso del almacenamiento local
+    const response = await fetch('http://127.0.0.1:5000/assign-action-to-category', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json', // Especifica que los datos se enviaran en formato JSON
+            'Authorization': `Bearer ${token}` // Agrega el token de autorizacion en la cabecera
+        },
+        body: JSON.stringify(data), // Convierte el objeto de datos a una cadena JSON
+    });
+
+    const responseData = await response.json(); // Convierte la respuesta a JSON
+    alert(responseData.message || responseData.error); // Muestra un mensaje con el resultado de la operacion
+    await loadCategoriesAndActions(); // Recarga la lista de categorias y acciones
+});
+
+    </script>
+</body>
+</html>
