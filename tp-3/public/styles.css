@@ -1,0 +1,119 @@
+body {
+    font-family: "Space Grotesk", sans-serif;    margin: 0;
+    padding: 0; 
+    height: 100vh; 
+}
+
+.fondo {
+    background-image: url('fondo2.jpg'); 
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat; 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+}
+
+.titulo{
+    font-family: "Bad Script", cursive;
+    color: white;
+    font-size: 25px;
+    }
+
+.chat-container {
+    max-width: 800px;
+    width: 100%; 
+    padding: 20px;
+    background-color: #fff; 
+    border-radius: 10px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+}
+
+.username-container {
+    display: flex; 
+    flex-direction: column; 
+}
+
+#username {
+    background-color: white;
+    border: 1px solid #ccc; 
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 10px; 
+    width: 95%; 
+}
+
+.message {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
+    font-family: "Space Grotesk", sans-serif;
+}
+
+.message-sent {
+    background-color: #ff2c97;
+    color: white;
+    text-align: left;
+    margin-right: auto; 
+}
+
+.message-received {
+    background-color:  #ed74bd;
+    color: white;
+    text-align: right;
+    margin-left: auto; 
+}
+
+/* Contenedor de los msjs */
+#messages {
+    border: 1px solid #f3b7d5;
+    border-radius: 10px;
+    padding: 10px;
+    height: 300px;
+    overflow-y: scroll; /* Desplazamiento vertical */
+    background-color: #f9f9f9; 
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+#message-input {
+    border: 1px solid #ccc; 
+    border-radius: 10px;
+    padding: 10px;
+    color: black;
+    flex-grow: 1; /* Para que el area del mensaje crezca */
+    margin-right: 10px; 
+    width: calc(100% - 110px); 
+}
+
+#send-message {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 18px;
+    background-color: #ff2c97;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    height: 100%; /
+}
+
+#set-username {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 18px;
+    margin: 0 auto; 
+    background-color: #ff2c97;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    width: 100%; 
+}
+
+
